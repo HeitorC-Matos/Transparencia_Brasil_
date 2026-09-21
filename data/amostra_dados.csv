@@ -1,0 +1,10 @@
+﻿estado,sigla,ano,funcao,valor_despesa,populacao,fonte_fiscal,fonte_populacao
+São Paulo,SP,2025,Educação,32000000000,45900000,Siconfi,IBGE
+São Paulo,SP,2025,Saúde,28500000000,45900000,Siconfi,IBGE
+São Paulo,SP,2025,Segurança Pública,14500000000,45900000,Siconfi,IBGE
+Goiás,GO,2025,Educação,7200000000,7350000,Siconfi,IBGE
+Goiás,GO,2025,Saúde,6100000000,7350000,Siconfi,IBGE
+Goiás,GO,2025,Segurança Pública,4300000000,7350000,Siconfi,IBGE
+Bahia,BA,2025,Educação,11500000000,14900000,Siconfi,IBGE
+Bahia,BA,2025,Saúde,10200000000,14900000,Siconfi,IBGE
+Bahia,BA,2025,Segurança Pública,5700000000,14900000,Siconfi,IBGE

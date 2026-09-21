@@ -1,0 +1,7 @@
+ODS 16 - Paz Justiça e Instituições Eficazes
+https://brasil.un.org/pt-br/sdgs/16
+Promover sociedades pacíficas e inclusivas e construir instituições eficazes, responsáveis e inclusivas em todos os níveis.
+
+Siconfi - API de Dados Abertos
+https://www.tesourotransparente.gov.br/consultas/consultas-siconfi/siconfi-api-de-dados-abertos
+O Tesouro Nacional disponibiliza uma API de dados abertos para acesso a informações contábeis e fiscais dos entes da federação.
