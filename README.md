@@ -1,4 +1,4 @@
-# Transparência Brasil — TP3 (rubricas complementadas)
+# Transparência Brasil — TP3 
 
 Continuação dos TPs 1 e 2, associada ao **ODS 16**. Mantém os três estados **SP, GO e BA**, as funções **Educação, Saúde e Segurança Pública** e os **9 registros fiscais ilustrativos** de 2025. Os valores da amostra não foram auditados em Siconfi/IBGE; **não são totais governamentais oficiais**.
 
