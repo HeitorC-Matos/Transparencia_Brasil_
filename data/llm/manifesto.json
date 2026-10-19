@@ -1,0 +1,9 @@
+{
+  "gerado_em_utc": "2026-10-19T18:54:21+00:00",
+  "quantidade_fragmentos": 12,
+  "total_web": 3,
+  "total_amostra_academica": 9,
+  "cadastros_manuais_incluidos": false,
+  "usa_modelo_llm": false,
+  "observacao": "Dados da amostra do TP1/TP2 sem validação fiscal externa."
+}

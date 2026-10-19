@@ -1,3 +1,11 @@
 .venv/
+venv/
 __pycache__/
-*.pyc
+*.py[cod]
+.pytest_cache/
+.streamlit/secrets.toml
+.env
+.DS_Store
+*.lock
+# Dados cadastrados via API não devem ser enviados ao repositório.
+data/registros_manuais.csv
