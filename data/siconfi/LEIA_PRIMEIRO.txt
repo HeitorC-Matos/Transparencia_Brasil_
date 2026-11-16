@@ -1,0 +1,13 @@
+DADOS OFICIAIS DECLARADOS AO SICONFI
+
+Esta pasta inclui a base consolidada despesas_oficiais.csv e o manifesto.json de uma coleta local já realizada. O manifesto registra 405 linhas para as 27 unidades da Federação, entre 2021 e 2025, nas funções Educação, Saúde e Segurança Pública.
+
+Para abrir o aplicativo não é necessário repetir a coleta. O script está disponível para consultar novamente o Siconfi quando houver necessidade de atualização:
+
+    python scripts/coletar_siconfi.py --ufs SP GO BA
+    python scripts/coletar_siconfi.py --todas
+    python scripts/coletar_siconfi.py --todas --atualizar
+
+As respostas originais ficam em raw/ e podem ser reutilizadas; raw/ e historico/ são pastas locais e não devem ser publicadas no GitHub. O CSV consolidado e o manifesto integram o repositório.
+
+A validação automática não substitui a conferência contábil por amostragem. Para os critérios de seleção e as limitações, veja documentacao/DADOS_OFICIAIS_SICONFI.md.

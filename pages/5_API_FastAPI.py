@@ -6,7 +6,7 @@ from utils.api_client import (
 )
 from utils.dados import ESTADOS, FUNCOES
 
-st.set_page_config(page_title="API FastAPI — TP3", page_icon="🔌", layout="wide")
+st.set_page_config(page_title="API FastAPI", page_icon="🔌", layout="wide")
 st.title("🔌 Integração Streamlit ↔ FastAPI")
 st.caption("Todas as consultas e cadastros nesta página são requisições HTTP à API personalizada.")
 st.code("uvicorn api.main:app --reload", language="bash")
@@ -21,7 +21,8 @@ st.success("FastAPI online: GET /health retornou status ok.")
 st.subheader("Consultar dados: GET /despesas")
 col1, col2, col3 = st.columns(3)
 uf = col1.selectbox("UF", ["Todas", *ESTADOS], index=0)
-origem = col2.selectbox("Origem", ["amostra_academica", "manual"])
+origem_exibida = col2.selectbox("Origem", ["Amostra ilustrativa", "Registros manuais"])
+origem = "amostra_academica" if origem_exibida == "Amostra ilustrativa" else "manual"
 funcao = col3.selectbox("Função", ["Todas", *FUNCOES])
 try:
     filtrados = consultar_despesas(

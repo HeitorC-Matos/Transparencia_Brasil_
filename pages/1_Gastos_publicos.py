@@ -4,7 +4,7 @@ from utils.analises import formatar_reais
 from utils.api_client import APIIndisponivel, consultar_despesas
 from utils.ui import aviso_amostra, obter_amostra
 
-st.set_page_config(page_title="Gastos públicos — TP3", page_icon="💰", layout="wide")
+st.set_page_config(page_title="Gastos públicos", page_icon="💰", layout="wide")
 st.title("💰 Gastos públicos por estado")
 aviso_amostra()
 

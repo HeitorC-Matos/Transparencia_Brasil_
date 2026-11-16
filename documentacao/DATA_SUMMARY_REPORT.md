@@ -1,84 +1,66 @@
-# Data Summary Report — Transparência Brasil (TP3, revisão das rubricas)
+# Data Summary Report — Transparência Brasil
 
-## 1. Visão geral dos conjuntos
+Este relatório apresenta os conjuntos de dados disponíveis, sua procedência e os cuidados necessários para interpretá-los. A aplicação mantém separados os registros ilustrativos, as coletas documentais e os dados fiscais declarados ao Siconfi.
 
-| Conjunto | Arquivo | Quantidade incluída na entrega | Origem e confiabilidade |
-|---|---|---:|---|
-| Amostra fiscal TP1/TP2 | `data/amostra_dados.csv` | 9 linhas | Amostra **ilustrativa**, valores não auditados |
-| Catálogo de conteúdo Web | `data/conteudo_web.csv` e `.txt` | 3 registros | 2 textos originais TP2 + 1 resumo documentado da CGU |
-| Selenium | `data/conteudo_selenium.csv` e `.txt` | 0 nesta entrega | Criados somente após coleta real com navegador |
-| Cadastros manuais | `data/registros_manuais.csv` | 0 inicialmente | Apenas POST válido; origem `manual`, não verificada |
-| Preparação LLM | `data/llm/documentos.jsonl` e `manifesto.json` | 12 documentos | 3 textos Web + 9 descrições fiscais, sem executar LLM |
+## Visão geral
 
-## 2. Base fiscal original
+| Conjunto | Arquivo principal | Conteúdo nesta versão | Natureza |
+|---|---|---|---|
+| Amostra ilustrativa | `data/amostra_dados.csv` | 9 registros de 2025 para SP, GO e BA | Valores demonstrativos, não auditados |
+| Conteúdo Beautiful Soup | `data/conteudo_web.csv` | 3 fontes institucionais | Textos Web com URL e método de coleta |
+| Conteúdo Selenium | `data/conteudo_selenium.csv` | 1 fonte institucional | Texto de coleta por navegador |
+| Preparação para LLM | `data/llm/documentos.jsonl` | 16 fragmentos, conforme manifesto | Textos preparados, sem inferência nessa etapa |
+| Base Siconfi | `data/siconfi/despesas_oficiais.csv` | 405 registros declarados, 27 UFs, 2021–2025 | Dados oficiais declarados; não auditados pelo projeto |
+| Cadastros manuais | `data/registros_manuais.csv` | Arquivo local, não publicado | Dados inseridos por usuário, sem comprovação externa |
 
-- **Unidades federativas:** SP, GO e BA.
-- **Período:** 2025.
-- **Funções:** Educação, Saúde e Segurança Pública.
-- **Colunas:** `estado`, `sigla`, `ano`, `funcao`, `valor_despesa`, `populacao`, `fonte_fiscal`, `fonte_populacao`.
-- **Referências declaradas:** Siconfi para fiscal e IBGE para população.
+## 1. Amostra inicial — três estados
 
-**Importante:** o material herdado não inclui as consultas/IDs de cada valor em Siconfi ou IBGE, nem auditoria independente. As referências declaradas não comprovam os valores. O CSV original está **preservado byte a byte** e não é atualizado pelo POST. Totais e indicadores per capita são úteis apenas para demonstração técnica.
+O arquivo `amostra_dados.csv` inclui Educação, Saúde e Segurança Pública para São Paulo, Goiás e Bahia no ano de 2025. Também apresenta população e rótulos de fontes Siconfi/IBGE, mas não contém os identificadores de extração necessários para conferir cada número. Por essa razão, todos os resultados de **Gastos públicos** e **Estatísticas** derivados desse arquivo são identificados como **ilustrativos**.
 
-## 3. Textos de páginas públicas (Beautiful Soup)
+A página Estatísticas calcula composição das três funções, valores por habitante, rankings, comparações entre dois estados, perfil estadual, matrizes, média, mediana, mínimo, máximo e amplitude. A participação percentual de cada função é calculada sobre **a soma das três funções da amostra**, não sobre o orçamento completo do estado.
 
-| URL oficial | Papel no projeto | Situação no pacote |
-|---|---|---|
-| https://brasil.un.org/pt-br/sdgs/16 | Contexto sobre ODS 16 | Registro herdado do TP2 |
-| https://www.tesourotransparente.gov.br/consultas/consultas-siconfi/siconfi-api-de-dados-abertos | API de dados fiscais do Siconfi | Registro herdado do TP2 |
-| https://www.gov.br/cgu/pt-br/assuntos/transparencia-publica | Nova fonte para contextualizar transparência e dados abertos | **Resumo documentado da página**, não extração Beautiful Soup comprovada |
+O cadastro manual via API escreve em arquivo diferente e não modifica os nove registros originais.
 
-`coleta_web.py` contém as três URLs e usa Requests com retries, timeout, Beautiful Soup para título/parágrafos, remoção de menus/scripts, deduplicação de parágrafos e persistência CSV/TXT. **Uma execução online bem-sucedida** define `data_coleta` UTC e `metodo=requests+beautifulsoup`. Na indisponibilidade de rede, o programa conserva registros anteriores e informa a falha. No ambiente desta entrega, os portais não puderam ser acessados diretamente pelo script: por transparência, o novo registro CGU está rotulado `resumo_documentado_por_consulta_web`, e sua data de scraping não foi inventada.
+## 2. Textos institucionais coletados da Web
 
-**Fonte da informação resumida:** página oficial da Controladoria-Geral da União sobre *Transparência Pública e Dados Abertos*, consultada por mecanismo de pesquisa Web. O resumo é uma paráfrase curta, não uma transcrição extensiva da página. Não foi extraído nenhum novo dado numérico fiscal dessa URL.
+`coleta_web.py` utiliza Requests e Beautiful Soup nas páginas do ODS 16 (ONU Brasil), do Siconfi (Tesouro Nacional) e da transparência pública (CGU). O CSV registra os métodos e as datas de coleta. O script preserva informações anteriores quando uma consulta falha, em vez de atribuir sucesso a uma operação não executada.
 
-**Colunas Web:** `titulo`, `url`, `texto`, `data_coleta` e `metodo`; compatibilidade preservada com os três campos originais do TP2. A API `GET /conteudo-web` devolve o catálogo e inclui arquivos Selenium válidos, caso existam.
+`coleta_selenium.py` realiza a aquisição de texto da página governamental sobre informações obrigatórias de transparência ativa. Os arquivos CSV e TXT fornecidos registram uma coleta efetiva por `selenium+chromium`. Os testes automatizados do coletor utilizam navegador simulado e não constituem uma nova consulta ao portal.
 
-## 4. Coleta por Selenium
+O endpoint `GET /conteudo-web` reúne os três registros Beautiful Soup e o registro Selenium, quando os arquivos estão presentes.
 
-**Script:** `coleta_selenium.py`.
+## 3. Corpus preparado para IA
 
-**URL oficial configurada:** https://www.gov.br/acessoainformacao/pt-br/assuntos/transparencia-ativa/informacoes-obrigatorias.
+O arquivo `data/llm/manifesto.json` registra **16 fragmentos**: sete fragmentos de quatro fontes Web e nove descrições dos dados ilustrativos. Parte dos textos é fracionada, de modo que o número de fragmentos Web não corresponde ao número de páginas.
 
-**Fluxo implementado:** Selenium WebDriver inicia Chromium/Chrome headless, navega para a página, utiliza `WebDriverWait` com verificação de parágrafos no DOM, obtém `page_source`, extrai título/texto pelo parser compartilhado com Beautiful Soup e grava `data/conteudo_selenium.csv/.txt`, com `metodo=selenium+chromium` e data UTC. Havendo erro, nenhuma coleta é alegada ou fabricada. A página foi selecionada por relevância ao tema de transparência e pelo conteúdo institucional; **não há afirmação de que o portal só funcione com JavaScript**.
+Essa preparação não executa o Qwen. A inferência local ocorre posteriormente, por meio da API FastAPI e do serviço `services/llm_service.py`. O conteúdo JSONL não está conectado a uma busca RAG automática nesta versão.
 
-**Validação disponível nesta entrega:** testes automatizados com navegador simulado verificam navegação, espera, extração, gravação e rejeição de página vazia. **Validação pendente:** execução Selenium WebDriver real contra o portal, pois o ambiente atual não dispõe de Selenium/ChromeDriver e acesso direto à Internet. Rodar `python coleta_selenium.py` em máquina configurada para obter evidência real.
+## 4. Base oficial declarada ao Siconfi
 
-## 5. FastAPI, consumo no Streamlit e entrada manual
+A coleta local gerou `data/siconfi/despesas_oficiais.csv` e `data/siconfi/manifesto.json`. O manifesto presente nesta versão informa **135 combinações UF/ano válidas, 405 registros padronizados e nenhuma combinação pendente**. A verificação deste pacote confirmou a presença das 27 UFs, dos cinco exercícios e das três funções, sem duplicidade no identificador UF/ano/função.
 
-O fluxo técnico é:
+Critérios utilizados:
 
-`CSV original → FastAPI GET /despesas → requests (utils/api_client.py) → Streamlit / Gráficos`
+- Fonte: API do Siconfi, RREO, Anexo 02;
+- Exercícios: 2021, 2022, 2023, 2024 e 2025;
+- Período: 6º bimestre de cada ano;
+- Estágio: despesas liquidadas **acumuladas até o bimestre (d)**;
+- Funções: Segurança Pública (06), Saúde (10) e Educação (12);
+- Abrangência: despesas exceto intraorçamentárias;
+- Valor: em reais nominais, com URL da consulta, data de coleta e hash da fonte.
 
-`Formulário Streamlit → requests POST /despesas → FastAPI/Pydantic → registros_manuais.csv`
+A origem é uma declaração oficial do ente, mas **a validação automática do programa não substitui a conferência contábil independente**. O cache bruto em `data/siconfi/raw/` e os históricos locais não fazem parte dos arquivos destinados à publicação no GitHub. Os valores consolidados, o manifesto, o coletor e a documentação acompanham a entrega.
 
-As páginas de Estatísticas e Conteúdo Web consultam também GET `/estatisticas` e GET `/conteudo-web`, respectivamente. O cliente faz paginação para reunir todos os resultados; erro HTTP ou API desligada aparece claramente na interface. Para garantir consulta didática sem backend, algumas páginas possuem fallback de visualização local **rotulado como offline**.
+Os valores representam **despesas dos governos estaduais e do Distrito Federal**, não necessariamente todas as despesas públicas realizadas no território das UFs. O Distrito Federal acumula competências estaduais e municipais. Não há dados de população oficial integrados por exercício, nem correção pela inflação nessa base.
 
-O POST aceita UF SP/GO/BA, ano 2000–2100, função enumerada, valor finito não negativo e população positiva. A API responde 201 e adiciona `id_registro`, `origem=manual` e `data_cadastro`. Os novos dados não contaminam análises da amostra, cujo filtro é `origem=amostra_academica`.
+## 5. Regras de qualidade e limites
 
-## 6. Preparação LLM
+As validações verificam tipos, estrutura, períodos, classificação, duplicatas, ausência de dados e coerência interna de valores conforme as regras programadas. Para a leitura pública, devem permanecer claros os limites de cada base:
 
-O comando `python preparar_llm.py` consolida o catálogo Web disponível (incluindo Selenium, quando coletado de verdade) e descreve a amostra de nove linhas em documentos com `id`, `tipo`, `origem`, `conteudo`, `metadados`. Os textos do Web preservam `url`, título e **método** de aquisição, distinguindo síntese documentada de scraping automatizado. Cada registro fiscal possui sinalização de não verificado. Dados manuais não entram no JSONL.
+- Valores ilustrativos não podem ser anunciados como despesas públicas verificadas.
+- As três funções selecionadas no Siconfi não formam o orçamento total de cada governo.
+- Despesas maiores não comprovam melhor desempenho da gestão.
+- Variações anuais na base Siconfi são nominais, sem ajuste inflacionário.
+- Dados coletados não equivalem a dados auditados pela aplicação.
 
-**Usos futuros:** resumos com citação de fonte, Q&A/RAG, geração de relatórios de demonstração. Sentimentos exigiriam outra base com opinião textual; não se deduzem sentimentos de tabelas fiscais ou textos institucionais.
-
-## 7. Problemas e limitações
-
-- Comparações acadêmicas **não** substituem análises fiscais auditadas.
-- Terceiro texto Web consultado/documentado, mas sem scraping HTTP executado nesta máquina.
-- A coleta Selenium só pode ser declarada **efetivamente executada** após gerar os seus CSV/TXT numa máquina com webdriver/rede.
-- URLs podem mudar, apresentar rate limits ou bloquear automação; os scripts mostram o erro, não geram dados fictícios.
-- API POST é local, sem autenticação e com arquivo CSV; é inadequada para exposição pública.
-- Um LLM futuro deve usar fontes citadas e ser avaliado por fidelidade.
-
-## 8. Reprodutibilidade
-
-1. `pip install -r requirements.txt`
-2. `uvicorn api.main:app --reload` (terminal 1)
-3. `streamlit run app.py` (terminal 2)
-4. `python coleta_web.py` (Internet necessária para extração online)
-5. `python coleta_selenium.py` (Internet, Selenium, Chrome/Chromium e driver)
-6. `python preparar_llm.py` (atualiza corpus após coletas)
-7. `python -m pytest -q` (testes automatizados offline)
-
-Consultar `documentacao/RELATORIO_TESTES.md` para evidências e roteiro manual.
+Para reproduzir a coleta e acompanhar eventuais retificações, consulte [`DADOS_OFICIAIS_SICONFI.md`](DADOS_OFICIAIS_SICONFI.md). Para detalhes da IA, consulte [`GUIA_LLM_LOCAL.md`](GUIA_LLM_LOCAL.md).

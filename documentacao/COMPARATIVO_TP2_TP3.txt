@@ -1,0 +1,17 @@
+# Comparativo TP2 → TP3 (revisão das rubricas)
+
+| Capacidade | TP2 | TP3 revisado |
+|---|---|---|
+| Navegação | 3 abas numa página | Menu lateral com início e 6 páginas |
+| Gráficos e filtros | CSV local | GET `/despesas` por HTTP, fallback local rotulado offline |
+| Indicadores | Soma filtrada e gráficos | GET `/estatisticas` integrado e indicador por habitante |
+| Upload/download | Sim | Preservados na página Arquivos |
+| API FastAPI | Não | 5 rotas com validação e Swagger |
+| POST pelo usuário Streamlit | Não | Formulário real POST `/despesas`, com retorno da API |
+| Extração Web | 2 fontes via Beautiful Soup | 3 URLs e 3 registros identificados no CSV como `requests+beautifulsoup`, incluindo CGU |
+| Selenium | Não | WebDriver, parser, CSV/TXT e **1 coleta real registrada em 19/10/2026** |
+| Qualidade do CSV | Amostra acadêmica | Amostra original intacta, manuais separados, proveniência Web explícita |
+| LLM | Ainda não planejado | 16 fragmentos JSONL (7 Web + 9 fiscais), RAG/resumos propostos e limites documentados |
+| Testes | Não apresentados aqui | **22 automatizados aprovados** e smoke HTTP real local |
+
+**Distinção essencial:** os CSVs atuais registram três coletas `requests+beautifulsoup` (inclusive CGU) e uma `selenium+chromium` (LAI). Os metadados refletem os arquivos da entrega, sem nova verificação remota nesta revisão. O Selenium **foi executado externamente em 19/10/2026**; separadamente, os testes automatizados validam sua lógica com navegador simulado e não dependem de acesso ao portal.

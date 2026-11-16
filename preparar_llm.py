@@ -80,7 +80,7 @@ def preparar(destino: Path | None = None) -> dict:
         "total_amostra_academica": sum(item["tipo"] == "despesa_academica" for item in documentos),
         "cadastros_manuais_incluidos": False,
         "usa_modelo_llm": False,
-        "observacao": "Dados da amostra do TP1/TP2 sem validação fiscal externa.",
+        "observacao": "Dados da amostra ilustrativa sem validação fiscal externa.",
     }
     (destino / "manifesto.json").write_text(
         json.dumps(manifesto, indent=2, ensure_ascii=False), encoding="utf-8"

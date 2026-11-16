@@ -15,8 +15,8 @@ def obter_web():
 
 def aviso_amostra():
     st.info(
-        "**Base acadêmica ilustrativa:** os nove valores de gastos do TP1/TP2 "
-        "foram preservados. As etiquetas Siconfi/IBGE no CSV não demonstram, "
+        "**Base ilustrativa não verificada:** os nove registros de gastos "
+        "utilizados nas visualizações não foram auditados. As etiquetas Siconfi/IBGE no CSV não demonstram, "
         "por si só, a verificação desses números em bases oficiais. "
         "Os gráficos não representam totais fiscais auditados."
     )

@@ -1,6 +1,6 @@
 """Coleta via Requests + Beautiful Soup em fontes oficiais verificáveis.
 
-Mantenha as duas URLs do TP2 e acrescente a página de transparência da CGU.
+Consulta páginas institucionais da ONU, Tesouro Nacional e CGU.
 Para aquisição com navegador, veja coleta_selenium.py.
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ COLUNAS = ["titulo", "url", "texto", "data_coleta", "metodo"]
 
 def criar_sessao():
     sessao = requests.Session()
-    sessao.headers.update({"User-Agent": "TransparenciaBrasilTP3/1.0 (uso academico)"})
+    sessao.headers.update({"User-Agent": "TransparenciaBrasil/1.0 (coleta institucional)"})
     politica = Retry(total=2, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
     sessao.mount("https://", HTTPAdapter(max_retries=politica))
     return sessao

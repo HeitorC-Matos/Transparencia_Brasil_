@@ -1,10 +1,10 @@
-# Preparação para integração futura com LLMs — TP3
+# Preparação do corpus documental para LLMs
 
 ## Situação atual
 
-Não é executado nem treinado modelo de IA nesta etapa. A rotina `python preparar_llm.py` produz `data/llm/documentos.jsonl` e `manifesto.json`. Atualmente são **12 documentos**: 3 registros Web e 9 descrições de despesas **ilustrativas e não auditadas**.
+A rotina de preparação de dados não executa nem treina um modelo de IA. O comando `python preparar_llm.py` produz `data/llm/documentos.jsonl` e `manifesto.json`. A última geração registrada em `manifesto.json` ocorreu em **16/11/2026 às 16:12:21 UTC**, com **16 fragmentos**: **7 fragmentos Web** (4 páginas distintas) e **9 descrições de despesas ilustrativas e não auditadas**. Os 7 fragmentos Web correspondem a ONU/ODS 16 (2), Tesouro/Siconfi (2), CGU (1) e Selenium/LAI (2). O fracionamento de textos longos explica por que 4 fontes Web geram 7 trechos.
 
-Os registros Web incluem título, URL, `metodo` (para identificar extração automatizada ou **resumo documentado**), data disponível e texto; os registros fiscais têm fonte nominal indicada e `verificado_em_fonte_oficial=false`. Os cadastros manuais por POST ficam de fora. Se o Selenium conseguir coletar e salvar `data/conteudo_selenium.csv`, rodar `preparar_llm.py` novamente incorporará a fonte no corpus.
+Os registros Web incluem título, URL, `metodo`, `data_coleta` e texto; os registros fiscais trazem fonte nominal e `verificado_em_fonte_oficial=false`. Os cadastros manuais por POST ficam de fora. **O conteúdo Selenium de 19/10/2026 já integra o corpus** (2 fragmentos com método `selenium+chromium`); os três registros Beautiful Soup também estão incluídos. Caso alguma fonte seja novamente coletada, basta executar `python preparar_llm.py` para atualizar os arquivos.
 
 ## Aplicações propostas
 

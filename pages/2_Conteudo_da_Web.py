@@ -7,7 +7,7 @@ from utils.analises import palavras_frequentes
 from utils.api_client import APIIndisponivel, consultar_conteudo_web
 from utils.ui import obter_web
 
-st.set_page_config(page_title="Conteúdo Web — TP3", page_icon="🌐", layout="wide")
+st.set_page_config(page_title="Conteúdo Web", page_icon="🌐", layout="wide")
 st.title("🌐 Conteúdo coletado na Web")
 st.caption("Requests + Beautiful Soup e coletor Selenium opcional, com fontes identificadas.")
 

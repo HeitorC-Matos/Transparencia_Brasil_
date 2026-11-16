@@ -1,11 +1,11 @@
-"""Upload e download de CSV preservados do TP2, agora em página própria."""
+"""Upload, visualização e download de arquivos CSV."""
 import pandas as pd
 import streamlit as st
 
 from utils.dados import COLUNAS_GASTOS
 from utils.ui import aviso_amostra, obter_amostra
 
-st.set_page_config(page_title="Arquivos — TP3", page_icon="📁", layout="wide")
+st.set_page_config(page_title="Arquivos", page_icon="📁", layout="wide")
 st.title("📁 Upload e download de arquivos")
 aviso_amostra()
 
@@ -60,5 +60,5 @@ st.subheader("Baixar base original")
 st.download_button(
     "Baixar amostra de gastos públicos (CSV)",
     base.to_csv(index=False).encode("utf-8-sig"),
-    file_name="amostra_gastos_tp3.csv", mime="text/csv",
+    file_name="amostra_gastos.csv", mime="text/csv",
 )

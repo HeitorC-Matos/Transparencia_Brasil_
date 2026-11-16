@@ -1,65 +1,58 @@
-# Project Charter — Transparência Brasil (TP3, revisão das rubricas)
+# Project Charter — Transparência Brasil
 
-## 1. Contexto do projeto
+## Propósito
 
-O trabalho mantém o tema original dos TPs 1 e 2: comparação educacional de uma **amostra ilustrativa** de gastos públicos por função em **São Paulo, Goiás e Bahia**, associada ao **ODS 16 — Paz, Justiça e Instituições Eficazes**. As 9 linhas da amostra de 2025 permanecem intactas; não há certificação independente dos valores Siconfi/IBGE indicados nas etiquetas do CSV.
+O Transparência Brasil foi criado para aproximar o cidadão das informações sobre despesas públicas. O projeto reúne visualizações, consultas por API e explicações em linguagem natural para reduzir as barreiras de interpretação dos dados. Está relacionado ao ODS 16, especialmente à transparência e ao acesso público à informação.
 
-## 2. Problema de negócio revisado
+A aplicação foi iniciada com uma **amostra ilustrativa de São Paulo, Goiás e Bahia, referente a 2025**. Posteriormente ganhou uma base independente de despesas declaradas ao Siconfi para **as 27 unidades da Federação, de 2021 a 2025**. As duas origens permanecem separadas.
 
-O acesso e interpretação de dados de gastos públicos e documentos sobre transparência podem exigir conhecimento técnico. No TP2, as comparações, a extração Web e o upload/download ficavam em abas e acessavam CSVs locais. No TP3, o problema também envolve **acesso programático por API**, rastreabilidade de fontes e preparação de textos para uso por sistemas de IA.
+## Público-alvo
 
-## 3. Objetivo geral
+Cidadãos interessados em transparência pública; como públicos secundários, estudantes, pesquisadores, jornalistas e organizações sociais. A interface busca explicar os indicadores sem exigir formação prévia em contabilidade governamental.
 
-Oferecer uma solução didática que apresente registros ilustrativos de três estados por meio de uma interface Streamlit multipágina **integrada por HTTP a uma API FastAPI**, amplie o catálogo documental de transparência pública e prepare material com origem rastreável para uso futuro com LLMs.
+## Objetivos
 
-## 4. Entregas e critérios de aceitação
+- Apresentar os registros ilustrativos com filtros, gráficos e estatísticas descritivas, sem atribuir caráter oficial a seus valores.
+- Consultar dados de despesas liquidadas declaradas ao Siconfi, com critérios de seleção verificáveis e identificação da fonte.
+- Permitir comparações entre unidades da Federação e exercícios, respeitando os limites de comparabilidade.
+- Disponibilizar uma API FastAPI com contratos de entrada e saída validados e mensagens claras quando ocorrerem falhas.
+- Oferecer resumos e explicações de textos por meio do Qwen executado localmente.
+- Preservar os dados originais, automatizar testes e documentar as escolhas metodológicas.
 
-| Item | Implementação / evidência | Critério verificável |
-|---|---|---|
-| Navegação multipágina | `app.py`, seis scripts `pages/` | Seis opções no menu lateral, além do início |
-| API personalizada | `api/main.py` | GET `/despesas`, `/estatisticas`, `/conteudo-web`, `/health` e POST `/despesas` |
-| Integração verdadeira | `utils/api_client.py` + páginas `1`, `2`, `4`, `5` | GET e POST por HTTP, sem depender exclusivamente de leitura local |
-| Inclusão de dados Web | `coleta_web.py` | 3 URLs oficiais configuradas (incluindo CGU) e saída CSV/TXT quando executado online |
-| Coleta com Selenium | `coleta_selenium.py` | Navegar em URL oficial, aguardar DOM, extrair texto, produzir CSV/TXT somente após sucesso |
-| Documentação | `documentacao/` | Charter, Data Summary, API, testes e plano de IA atualizados |
-| IA futura | `preparar_llm.py` | JSONL e manifesto com origem, URLs e aviso sobre amostra ilustrativa |
-| Qualidade | `tests/` | Testes de contrato GET/POST, cliente HTTP, parsing e Selenium simulado |
+## Funcionalidades disponíveis
 
-## 5. Decisões técnicas
-
-- **FastAPI** fornece uma interface reutilizável para consulta, indicadores e cadastro em `data/registros_manuais.csv` (rotulado como `manual`, sem alterar o CSV acadêmico).
-- **Streamlit** consulta a API via `requests`. Para permitir visualização mesmo com a API desligada, algumas páginas apresentam fallback offline **com aviso visível**; essa alternativa não é considerada comunicação com a API.
-- **Beautiful Soup** continua sendo a coleta principal por simplicidade e adequação ao HTML de páginas institucionais.
-- **Selenium** foi acrescentado para demonstrar aquisição via navegador com espera por conteúdo renderizado. Não se afirma que o portal selecionado exija JavaScript: o navegador foi adotado para atender explicitamente à rubrica.
-- **Segregação de proveniência:** números fiscais ilustrativos, conteúdo Web documentado, coletas HTTP/Selenium e cadastros manuais não devem ser confundidos.
-
-## 6. Fontes e escopo
-
-1. Amostra original: `data/amostra_dados.csv` (TP1/TP2), 9 linhas, fontes declaradas Siconfi/IBGE **não auditadas**.
-2. ONU/ODS 16: https://brasil.un.org/pt-br/sdgs/16.
-3. Tesouro/Siconfi: https://www.tesourotransparente.gov.br/consultas/consultas-siconfi/siconfi-api-de-dados-abertos.
-4. **Nova fonte documental:** CGU — https://www.gov.br/cgu/pt-br/assuntos/transparencia-publica.
-5. **Fonte para Selenium:** página governamental de informações obrigatórias — https://www.gov.br/acessoainformacao/pt-br/assuntos/transparencia-ativa/informacoes-obrigatorias.
-6. Cadastros manuais via FastAPI (sem autenticação e sem equivalência a dados públicos oficiais).
-
-O TP3 **não inclui** autenticação, auditoria de dados fiscais, todos os estados, deploy público seguro, execução de LLM nem evidência automática de que as páginas governamentais sejam exclusivamente dinâmicas.
-
-## 7. Riscos e mitigação
-
-| Risco | Mitigação |
+| Componente | Implementação |
 |---|---|
-| Interpretar amostra como balanço oficial | Avisos de base ilustrativa e separação de origens |
-| API desligada | Mensagem de offline e instrução para iniciar Uvicorn |
-| POST público não seguro | Somente execução local, registros separados, validação Pydantic |
-| Portais ou seletores mudarem | Timeouts, tratamento de erros e logs; revisar fontes quando necessário |
-| Selenium sem driver/rede | Configuração explícita e falha sem gerar CSV inventado |
-| Confundir síntese Web documentada com scraping executado | Campo `metodo=resumo_documentado_por_consulta_web` e metadados distintos |
-| Respostas incorretas de LLM | RAG com URL e evidências, validação humana e aviso de dados ilustrativos |
+| Interface | Streamlit, com sete seções: App, Gastos públicos, Estatísticas, Dados oficiais, Conteúdo da Web, API FastAPI e Assistente IA. |
+| Amostra | Nove registros de 2025, três estados e três funções, com estatísticas comparativas e per capita ilustrativas. |
+| Dados oficiais | Base consolidada Siconfi com 405 registros em 27 UFs e cinco exercícios, segundo o manifesto da coleta. |
+| API | FastAPI com consultas, registro manual separado, `response_model` e tratamento de erros. |
+| Conteúdo documental | Textos institucionais coletados por Beautiful Soup e Selenium. |
+| IA local | Qwen3-4B-Instruct-2507 para resumos e explicações, carregado em disco com Transformers/PyTorch. |
+| Qualidade | Testes unitários e de integração automatizados, além de testes reais de geração informados pelo usuário. |
 
-## 8. Stakeholders
+## Decisões metodológicas
 
-Aluno desenvolvedor, professor avaliador, cidadãos/estudantes interessados em transparência e órgãos provedores de documentação pública (sem participação no desenvolvimento).
+A amostra ilustrativa permanece imutável e não é misturada à base do Siconfi. Nos dados oficiais, utiliza-se o RREO, Anexo 02, 6º bimestre, com **despesas liquidadas acumuladas** das funções Educação (12), Saúde (10) e Segurança Pública (06), excluídas as intraorçamentárias. As agregações regionais exigem cobertura completa; o programa não converte ausências em zero.
 
-## 9. Próximas etapas
+O Siconfi é uma fonte de dados declarados pelos entes, mas a coleta e as regras automatizadas **não certificam a correção contábil dos valores**. A aplicação também não permite inferir qualidade da gestão somente pelo volume de despesas.
 
-No TP seguinte: coleta fiscal reproduzível diretamente em APIs oficiais, recuperação textual com referências, avaliação de LLM por acurácia/fidelidade e regras de privacidade. A coleta executada por Selenium e o uso real do Streamlit devem ser conferidos em máquina com Internet e navegador configurado antes da apresentação.
+O modelo de IA opera localmente após o download dos pesos. As entradas e saídas são validadas com Pydantic; falhas de carregamento, limite de concorrência e timeouts recebem respostas HTTP específicas. O modelo **não consulta autonomamente todo o corpus documental**, nem substitui os cálculos realizados em Python.
+
+## Riscos e controles
+
+| Risco | Controle adotado |
+|---|---|
+| Confundir valores ilustrativos com oficiais | Bases independentes, identificação de origem e avisos visíveis. |
+| Divergência ou retificação em demonstrativos | Armazenamento local da origem e manifesto, scripts de recolhimento e conferência amostral recomendada. |
+| Comparações indevidas entre UFs | Mesmos critérios de ano, estágio e função; ressalva sobre diferenças institucionais do DF. |
+| Interrupção de fontes externas | Cache de coleta, sinalização de falhas e preservação de resultados anteriores quando aplicável. |
+| Indisponibilidade do Qwen | Diagnóstico específico, erros HTTP e independência das consultas fiscais. |
+| Respostas incorretas da IA | Avisos de verificação, validação estrutural e apresentação das fontes dos valores selecionados. |
+| Exposição indevida da API de cadastro | Uso local, sem publicação aberta e sem autenticação presumida. |
+
+## Evoluções previstas
+
+Aprimorar a conferência documental da coleta nacional; incorporar despesas totais comparáveis e denominadores oficiais; relacionar população do IBGE por exercício; permitir indicadores per capita oficiais e correção monetária; avaliar a fidelidade das explicações geradas pelo Qwen; e ampliar gradualmente o mecanismo de recuperação documental.
+
+Essas evoluções **não são funcionalidades concluídas nesta versão**.

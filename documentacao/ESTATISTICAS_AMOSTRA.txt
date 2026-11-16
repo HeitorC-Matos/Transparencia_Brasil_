@@ -1,0 +1,41 @@
+ESTATÍSTICAS DA AMOSTRA ILUSTRATIVA — CRITÉRIOS E LIMITAÇÕES
+
+Escopo
+A página Estatísticas analisa somente os nove registros de 2025 da amostra
+ilustrativa dos estados São Paulo (SP), Goiás (GO) e Bahia (BA). A consulta
+HTTP utiliza origem=amostra_academica. Não mistura cadastros manuais nem dados
+fiscais oficiais coletados posteriormente do Siconfi.
+
+1. Soma das funções: somatório apenas de Educação, Saúde e Segurança Pública
+presentes na amostra de cada estado. Não equivale à despesa total do governo.
+2. Participação percentual: valor da função dividido pela soma das funções
+incluídas na amostra do mesmo estado e exercício, multiplicado por 100.
+Exemplo ilustrativo: Educação/SP = R$ 32 bilhões / R$ 75 bilhões = 42,67%.
+3. Despesa por habitante: valor da função ou soma das funções dividido pela
+população informada na amostra para o mesmo estado e ano, sem somar populações.
+4. Ranking: ordenação de estados pelos valores ilustrativos absolutos ou por
+habitante. Não constitui uma classificação da gestão pública.
+5. Comparação direta: diferença = valor do estado B menos valor do estado A.
+Diferença percentual = diferença / valor do estado A * 100, quando A != 0.
+Calculada para o valor absoluto e para o valor por habitante.
+6. Perfil estadual: detalhamento por função, total da seleção, população e
+valor por habitante; destaque da função de maior valor na amostra.
+7. Matriz: cruzamento estado x função, para valores absolutos e per capita.
+Valor ausente fica ausente, nunca é substituído automaticamente por zero.
+8. Estatísticas descritivas: média, mediana, mínimo, máximo e amplitude dos
+valores de cada função entre os estados presentes na amostra.
+
+Integridade e interpretação
+O código rejeita populações incoerentes, duplicatas por estado/ano/função,
+valores negativos, não numéricos, infinitos e população igual a zero. As
+informações não foram auditadas contra Siconfi ou IBGE. Não se aplicam
+inferências estatísticas nem análise temporal sobre esses nove registros.
+O estado com maior despesa não é, necessariamente, mais eficiente ou melhor.
+
+Arquivos e verificações
+Página: pages/4_Estatisticas.py
+Cálculos: utils/estatisticas_amostra.py
+Testes: tests/test_estatisticas_amostra.py
+Execução: python -m pytest -q
+O FastAPI e o Qwen continuam independentes dessa atualização, sem necessidade
+de reinstalação ou de novo download dos pesos.

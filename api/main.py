@@ -10,6 +10,11 @@ from typing import Literal
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Query, status
+
+from api.erros import configurar_erros
+from api.routes.ia import router as ia_router
+from api.schemas.geral import ConteudoWeb, ResumoEstatisticas, SaudeAPI
+from api.routes.dados_oficiais import router as oficiais_router
 from filelock import FileLock
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -19,14 +24,20 @@ from utils.dados import (
 )
 
 app = FastAPI(
-    title="Transparência Brasil — API TP3",
+    title="Transparência Brasil — API",
     description=(
-        "Demonstração acadêmica de comparação de despesas estaduais. "
+        "Serviço local de consulta e comparação de despesas estaduais ilustrativas. "
         "A amostra original NÃO equivale a valores oficiais auditados. "
         "Cadastros via POST são mantidos separados e identificados como manuais."
     ),
-    version="3.0.0",
+    version="4.0.0",
 )
+
+
+configurar_erros(app)
+
+app.include_router(ia_router)
+app.include_router(oficiais_router)
 
 
 class NovaDespesa(BaseModel):
@@ -39,25 +50,25 @@ class NovaDespesa(BaseModel):
 
 
 class RegistroDespesa(BaseModel):
-    id_registro: str
-    estado: str
-    sigla: str
-    ano: int
-    funcao: str
-    valor_despesa: float
-    populacao: int
-    fonte_fiscal: str
-    fonte_populacao: str
-    origem: str
+    id_registro: str = Field(min_length=1)
+    estado: str = Field(min_length=1)
+    sigla: Literal["SP", "GO", "BA"]
+    ano: int = Field(ge=2000, le=2100)
+    funcao: Literal["Educação", "Saúde", "Segurança Pública"]
+    valor_despesa: float = Field(ge=0, allow_inf_nan=False)
+    populacao: int = Field(gt=0)
+    fonte_fiscal: str = Field(min_length=1)
+    fonte_populacao: str = Field(min_length=1)
+    origem: Literal["amostra_academica", "manual"]
     data_cadastro: str | None = None
 
 
 class RespostaDespesas(BaseModel):
-    total: int
-    limite: int
-    deslocamento: int
+    total: int = Field(ge=0)
+    limite: int = Field(ge=1, le=1000)
+    deslocamento: int = Field(ge=0)
     dados: list[RegistroDespesa]
-    aviso: str = "A amostra é acadêmica, não representa a totalidade das contas estaduais."
+    aviso: str = "A amostra é ilustrativa e não representa a totalidade das contas estaduais."
 
 
 def _inserir_manual(registro: dict) -> None:
@@ -87,7 +98,7 @@ def _inserir_manual(registro: dict) -> None:
                 os.remove(tmp)
 
 
-@app.get("/health", tags=["Sistema"])
+@app.get("/health", response_model=SaudeAPI, tags=["Sistema"])
 def health():
     """Permite verificar se a API está em execução."""
     return {"status": "ok"}
@@ -136,7 +147,7 @@ def cadastrar_despesa(nova: NovaDespesa):
     return registro
 
 
-@app.get("/estatisticas", tags=["Análises"])
+@app.get("/estatisticas", response_model=ResumoEstatisticas, tags=["Análises"])
 def estatisticas(origem: Literal["amostra_academica", "manual"] = "amostra_academica"):
     """Resumo por função, com origem explícita para não misturar amostra e cadastros."""
     registros = [r for r in listar_registros() if r["origem"] == origem]
@@ -150,7 +161,7 @@ def estatisticas(origem: Literal["amostra_academica", "manual"] = "amostra_acade
     }
 
 
-@app.get("/conteudo-web", tags=["Conteúdo Web"])
+@app.get("/conteudo-web", response_model=list[ConteudoWeb], tags=["Conteúdo Web"])
 def consultar_conteudo_web():
     """Retorna textos existentes no CSV, com URL de referência."""
     return ler_web().to_dict(orient="records")
