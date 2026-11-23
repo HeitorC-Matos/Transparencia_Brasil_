@@ -1,0 +1,9 @@
+DECLARAÇÃO DE USO DE INTELIGÊNCIA ARTIFICIAL
+
+Utilizei o ChatGPT, da OpenAI (modelo GPT-6), como ferramenta de apoio ao desenvolvimento do Transparência Brasil, especialmente na organização do código, na implementação de funcionalidades e testes e na revisão dos textos de documentação.
+
+A aplicação também utiliza o Qwen3-4B-Instruct-2507, da família Qwen, disponibilizado pelo Hugging Face. Esse modelo é executado localmente com PyTorch e Transformers para produzir resumos e explicações de textos enviados ao assistente.
+
+As respostas geradas por inteligência artificial são passíveis de erro e devem ser conferidas. O projeto diferencia expressamente a amostra ilustrativa dos dados fiscais obtidos do Siconfi.
+
+Na etapa de sumarização automática, utilizei o ChatGPT (GPT-6) como apoio à criação dos serviços, contratos HTTP, interface e testes. O Qwen local é o modelo de inferência utilizado pelo aplicativo, inclusive para resumir conteúdos coletados e redigir explicações dos indicadores previamente calculados em Python. A avaliação da qualidade das respostas exige leitura e validação humanas; os testes automatizados de código não são apresentados como prova de inferência real na GPU.
