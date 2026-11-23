@@ -116,9 +116,12 @@ def test_zero_em_todas_as_funcoes_nao_inventa_percentual(amostra):
     assert comparacao["valor_absoluto"]["diferenca_pct"] is None
 
 
-def test_tela_consulta_somente_amostra():
+def test_amostra_preservada_mas_pagina_estatisticas_passa_a_ser_oficial():
     from pathlib import Path
     pag = (Path(__file__).resolve().parents[1] / "pages" / "4_Estatisticas.py").read_text(encoding="utf-8")
-    assert 'consultar_despesas(origem="amostra_academica")' in pag
-    assert "consultar_dados_oficiais" not in pag
+    painel = (Path(__file__).resolve().parents[1] / "utils" / "dashboard_ui.py").read_text(encoding="utf-8")
+    assert "exibir_dashboard()" in pag
+    assert "consultar_dados_oficiais" in painel
+    assert 'consultar_despesas(origem="amostra_academica")' not in pag
     assert "registros_manuais" not in pag
+    assert "utils.estatisticas_amostra" not in pag

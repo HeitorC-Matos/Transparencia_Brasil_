@@ -1,10 +1,10 @@
-ESTATÍSTICAS DA AMOSTRA ILUSTRATIVA — CRITÉRIOS E LIMITAÇÕES
+ESTATÍSTICAS DA AMOSTRA ILUSTRATIVA — DOCUMENTAÇÃO HISTÓRICA
 
 Escopo
-A página Estatísticas analisa somente os nove registros de 2025 da amostra
-ilustrativa dos estados São Paulo (SP), Goiás (GO) e Bahia (BA). A consulta
-HTTP utiliza origem=amostra_academica. Não mistura cadastros manuais nem dados
-fiscais oficiais coletados posteriormente do Siconfi.
+A versão anterior da página Estatísticas analisava nove registros de 2025 da amostra
+ilustrativa dos estados São Paulo (SP), Goiás (GO) e Bahia (BA). A consulta anterior via HTTP utilizava origem=amostra_academica. Atualmente, a página
+Estatísticas consulta os dados oficiais de todas as UFs. O código e os testes da
+amostra continuam preservados para demonstração e regressão.
 
 1. Soma das funções: somatório apenas de Educação, Saúde e Segurança Pública
 presentes na amostra de cada estado. Não equivale à despesa total do governo.
@@ -33,7 +33,8 @@ inferências estatísticas nem análise temporal sobre esses nove registros.
 O estado com maior despesa não é, necessariamente, mais eficiente ou melhor.
 
 Arquivos e verificações
-Página: pages/4_Estatisticas.py
+Página atual com base oficial: pages/4_Estatisticas.py
+Documentação do novo painel: documentacao/ESTATISTICAS_NACIONAIS.md
 Cálculos: utils/estatisticas_amostra.py
 Testes: tests/test_estatisticas_amostra.py
 Execução: python -m pytest -q

@@ -16,9 +16,12 @@ def test_menu_possui_ordem_solicitada_e_oculta_paginas_de_bastidores():
     for pagina in paginas:
         assert isinstance(pagina, ast.Call) and pagina.func.attr == "Page"
         titulos.append(next(k.value.value for k in pagina.keywords if k.arg == "title"))
-    assert titulos == ["App", "Gastos públicos", "Estatísticas", "Dados oficiais",
+    assert titulos == ["App", "Gastos públicos", "Dados oficiais",
                        "Conteúdo da Web", "API FastAPI", "Assistente IA"]
     assert (ROOT / "pages/6_Preparacao_para_IA.py").is_file()
     assert (ROOT / "pages/3_Arquivos.py").is_file()
     assert "Preparação para IA" not in titulos
     assert "Arquivos" not in titulos
+    assert "Estatísticas" not in titulos
+    assert (ROOT / "pages/1_Gastos_publicos.py").is_file()  # histórico, não listado
+    assert "pages/1_Gastos_publicos.py" not in (ROOT / "app.py").read_text(encoding="utf-8")

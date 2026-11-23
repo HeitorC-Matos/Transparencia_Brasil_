@@ -45,11 +45,17 @@ def _interpretar_erro_http(erro: requests.HTTPError, metodo: str, caminho: str):
     mensagem = contrato.get("mensagem") if isinstance(contrato.get("mensagem"), str) else None
     if status == 503 and caminho.startswith("/dados-oficiais"):
         mensagem = "A base oficial do Siconfi não está disponível. Verifique a coleta local e o manifesto."
+    elif status == 503 and caminho == "/ia/documentos":
+        mensagem = "O catálogo de documentos coletados está indisponível. Confira os arquivos locais."
     elif status in mensagens:
         mensagem = mensagens[status]
     if not mensagem:
         mensagem = f"A API recusou a requisição ({status or 'erro HTTP'})."
     detalhe = corpo.get("detail")
+    if status == 422 and caminho == "/ia/perguntar_dados" and isinstance(detalhe, str):
+        mensagem = detalhe
+    if status == 503 and caminho == "/ia/perguntar_dados" and isinstance(detalhe, str):
+        mensagem = detalhe
     if status == 422 and isinstance(detalhe, list):
         campos = [str(i.get("loc", ["corpo"])[-1]) for i in detalhe[:3]
                   if isinstance(i, dict)]
@@ -172,7 +178,7 @@ def consultar_status_ia(*, sessao=None) -> dict:
 
 
 def processar_texto_ia(texto: str, operacao: str = "resumo", *,
-                       max_novos_tokens: int = 256, sessao=None) -> dict:
+                       max_novos_tokens: int = 384, sessao=None) -> dict:
     """Faz inferência REAL pelo FastAPI; espera maior que rotas normais."""
     resposta = requisitar(
         "POST", "/processar_texto",
@@ -238,3 +244,62 @@ def consultar_regioes_oficiais(ano: int, funcao: str, *, sessao=None) -> dict:
     if not isinstance(r, dict) or not isinstance(r.get("dados"), list):
         raise APIIndisponivel("Resposta de regiões fora do contrato")
     return r
+
+
+def listar_documentos_ia(*, sessao=None) -> list[dict]:
+    """Carrega o catálogo textual local via FastAPI, sem acessar os CSVs na página."""
+    resultado = requisitar("GET", "/ia/documentos", sessao=sessao)
+    if not isinstance(resultado, list) or any(
+        not isinstance(doc, dict) or not isinstance(doc.get("id"), str)
+        for doc in resultado
+    ):
+        raise APIIndisponivel("Catálogo de documentos fora do contrato esperado")
+    return resultado
+
+
+def resumir_documento_ia(documento_id: str, *, modo: str = "executivo",
+                         versao_prompt: str = "fundamentado", max_novos_tokens: int = 384,
+                         sessao=None) -> dict:
+    resposta = requisitar(
+        "POST", "/ia/resumir_documento",
+        json={"documento_id": documento_id, "modo": modo,
+              "versao_prompt": versao_prompt, "max_novos_tokens": max_novos_tokens},
+        sessao=sessao, timeout=300,
+    )
+    if not isinstance(resposta, dict) or not isinstance(resposta.get("resultado"), str) \
+            or resposta.get("execucao_local") is not True or not isinstance(resposta.get("fontes"), list):
+        raise APIIndisponivel("Resposta documental fora do contrato esperado")
+    return resposta
+
+
+def sintetizar_dados_fiscais_ia(ufs: list[str], ano: int, funcoes: list[str], *,
+                                modo: str = "executivo", versao_prompt: str = "fundamentado",
+                                max_novos_tokens: int = 384, sessao=None) -> dict:
+    resposta = requisitar(
+        "POST", "/ia/sintese_fiscal",
+        json={"ufs": ufs, "ano": ano, "funcoes": funcoes, "modo": modo,
+              "versao_prompt": versao_prompt, "max_novos_tokens": max_novos_tokens},
+        sessao=sessao, timeout=300,
+    )
+    if not isinstance(resposta, dict) or not isinstance(resposta.get("resultado"), str) \
+            or resposta.get("execucao_local") is not True or not isinstance(resposta.get("fontes"), list):
+        raise APIIndisponivel("Síntese fiscal fora do contrato esperado")
+    return resposta
+
+
+def perguntar_dados_ia(pergunta: str, ano_referencia: int = 2025, *,
+                      usar_qwen: bool = True, max_novos_tokens: int = 384,
+                      sessao=None) -> dict:
+    """Responde com cálculos do Python; Qwen apenas complementa, quando solicitado."""
+    resposta = requisitar(
+        "POST", "/ia/perguntar_dados",
+        json={"pergunta": pergunta, "ano_referencia": ano_referencia,
+              "usar_qwen": usar_qwen, "max_novos_tokens": max_novos_tokens},
+        sessao=sessao, timeout=300 if usar_qwen else 15,
+    )
+    if (not isinstance(resposta, dict) or not isinstance(resposta.get("resposta_calculada"), str)
+            or not isinstance(resposta.get("dados"), list)
+            or not isinstance(resposta.get("fontes"), list)
+            or not isinstance(resposta.get("qwen_executado"), bool)):
+        raise APIIndisponivel("Consulta fiscal fora do contrato esperado")
+    return resposta

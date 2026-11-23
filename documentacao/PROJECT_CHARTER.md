@@ -1,58 +1,48 @@
-# Project Charter — Transparência Brasil
+# Project Charter — Transparência Brasil (atualizado em novembro de 2026)
 
-## Propósito
+## 1. Por que o projeto existe
 
-O Transparência Brasil foi criado para aproximar o cidadão das informações sobre despesas públicas. O projeto reúne visualizações, consultas por API e explicações em linguagem natural para reduzir as barreiras de interpretação dos dados. Está relacionado ao ODS 16, especialmente à transparência e ao acesso público à informação.
+Os portais públicos divulgam informações sobre despesas, mas nem sempre é simples para o cidadão encontrar e entender esses dados. O Transparência Brasil foi criado para apresentar parte dessas informações em gráficos e tabelas mais acessíveis, além de permitir perguntas e explicações em linguagem natural. O projeto não pretende classificar estados como mais eficientes apenas porque gastaram menos.
 
-A aplicação foi iniciada com uma **amostra ilustrativa de São Paulo, Goiás e Bahia, referente a 2025**. Posteriormente ganhou uma base independente de despesas declaradas ao Siconfi para **as 27 unidades da Federação, de 2021 a 2025**. As duas origens permanecem separadas.
+## 2. Objetivo, público e relação com o ODS
 
-## Público-alvo
+O objetivo geral é facilitar a consulta e a comparação de informações sobre despesas públicas estaduais, usando Python, dados abertos e inteligência artificial local. O principal público é o cidadão comum; estudantes, jornalistas e pesquisadores também podem utilizar o sistema. O trabalho está relacionado ao pilar **Governança** do ESG e ao **ODS 16**, especialmente às metas **16.6** (instituições responsáveis e transparentes) e **16.10** (acesso à informação).
 
-Cidadãos interessados em transparência pública; como públicos secundários, estudantes, pesquisadores, jornalistas e organizações sociais. A interface busca explicar os indicadores sem exigir formação prévia em contabilidade governamental.
+## 3. Escopo que foi implementado
 
-## Objetivos
+- A proposta original previa três estados (São Paulo, Goiás e Bahia), despesas totais, proporções no orçamento e despesas por habitante, com uso principal dos dados anuais do DCA e população do IBGE.
+- A versão atual trabalha com **26 estados e o Distrito Federal**, exercícios **2021 a 2025**, e três funções: **Educação, Saúde e Segurança Pública**.
+- O indicador fiscal utilizado é **despesa liquidada acumulada até o sexto bimestre**, extraído do **RREO, Anexo 02, do Siconfi**, sem os registros intraorçamentários.
+- A base consolidada incluída no projeto tem **405 registros** (27 UFs × 5 exercícios × 3 funções), sem pendências no manifesto da coleta.
+- A página Gastos públicos exibe o **total das despesas das funções selecionadas** para cada UF e exercício. A participação percentual se refere a esse recorte e não ao orçamento inteiro do estado. A série de população do IBGE ainda não foi integrada à base oficial. Assim, **não existe per capita oficial** nesta versão.
 
-- Apresentar os registros ilustrativos com filtros, gráficos e estatísticas descritivas, sem atribuir caráter oficial a seus valores.
-- Consultar dados de despesas liquidadas declaradas ao Siconfi, com critérios de seleção verificáveis e identificação da fonte.
-- Permitir comparações entre unidades da Federação e exercícios, respeitando os limites de comparabilidade.
-- Disponibilizar uma API FastAPI com contratos de entrada e saída validados e mensagens claras quando ocorrerem falhas.
-- Oferecer resumos e explicações de textos por meio do Qwen executado localmente.
-- Preservar os dados originais, automatizar testes e documentar as escolhas metodológicas.
+## 4. Recursos entregues
 
-## Funcionalidades disponíveis
-
-| Componente | Implementação |
+| Recurso | Situação |
 |---|---|
-| Interface | Streamlit, com sete seções: App, Gastos públicos, Estatísticas, Dados oficiais, Conteúdo da Web, API FastAPI e Assistente IA. |
-| Amostra | Nove registros de 2025, três estados e três funções, com estatísticas comparativas e per capita ilustrativas. |
-| Dados oficiais | Base consolidada Siconfi com 405 registros em 27 UFs e cinco exercícios, segundo o manifesto da coleta. |
-| API | FastAPI com consultas, registro manual separado, `response_model` e tratamento de erros. |
-| Conteúdo documental | Textos institucionais coletados por Beautiful Soup e Selenium. |
-| IA local | Qwen3-4B-Instruct-2507 para resumos e explicações, carregado em disco com Transformers/PyTorch. |
-| Qualidade | Testes unitários e de integração automatizados, além de testes reais de geração informados pelo usuário. |
+| Coleta fiscal pela API do Siconfi | Implementada e documentada. |
+| Coleta de páginas institucionais por Beautiful Soup e Selenium | Implementada; quatro documentos armazenados. |
+| Dashboard Streamlit | Implementado na página **Gastos públicos**, com filtros e estatísticas nacionais. |
+| API FastAPI | Implementada, com rotas, validações e tratamento de erros. |
+| IA local | Qwen3-4B-Instruct-2507 para sumarização documental, explicações e perguntas fiscais. |
+| Engenharia de prompts | Três versões testadas; experimento real em JSON disponível. |
+| Testes | 259 testes automatizados aprovados na versão conferida; 8 avisos. |
 
-## Decisões metodológicas
+A página **App** apresenta o projeto; **Gastos públicos** concentra gráficos e insights; **Dados oficiais** reúne a consulta aos registros; **Conteúdo da Web** guarda os textos; **API FastAPI** descreve os serviços; e **Assistente IA** recebe perguntas e pedidos de resumo.
 
-A amostra ilustrativa permanece imutável e não é misturada à base do Siconfi. Nos dados oficiais, utiliza-se o RREO, Anexo 02, 6º bimestre, com **despesas liquidadas acumuladas** das funções Educação (12), Saúde (10) e Segurança Pública (06), excluídas as intraorçamentárias. As agregações regionais exigem cobertura completa; o programa não converte ausências em zero.
+## 5. Fontes e tecnologias
 
-O Siconfi é uma fonte de dados declarados pelos entes, mas a coleta e as regras automatizadas **não certificam a correção contábil dos valores**. A aplicação também não permite inferir qualidade da gestão somente pelo volume de despesas.
+- Fontes fiscais: API do Siconfi/Tesouro Nacional, RREO, Anexo 02.
+- Fontes textuais: ONU Brasil (ODS 16), Tesouro Nacional, CGU e página governamental de transparência ativa.
+- Tecnologias: Python, Streamlit, FastAPI, Requests, Beautiful Soup, Selenium, Pandas, Pydantic e Qwen executado localmente.
+- Organização: cinco fases do **Team Data Science Process (TDSP)**.
 
-O modelo de IA opera localmente após o download dos pesos. As entradas e saídas são validadas com Pydantic; falhas de carregamento, limite de concorrência e timeouts recebem respostas HTTP específicas. O modelo **não consulta autonomamente todo o corpus documental**, nem substitui os cálculos realizados em Python.
+## 6. Riscos, cuidados e metas de aceitação
 
-## Riscos e controles
+Os valores fiscais são declarações ao Siconfi; o sistema não realiza auditoria independente dos demonstrativos. A amostra inicial de nove registros é **ilustrativa** e permanece separada da base oficial. Nos cálculos, dados ausentes não devem ser transformados em zero. As respostas do Qwen podem ter erros; os valores e fontes devem ser conferidos na aplicação.
 
-| Risco | Controle adotado |
-|---|---|
-| Confundir valores ilustrativos com oficiais | Bases independentes, identificação de origem e avisos visíveis. |
-| Divergência ou retificação em demonstrativos | Armazenamento local da origem e manifesto, scripts de recolhimento e conferência amostral recomendada. |
-| Comparações indevidas entre UFs | Mesmos critérios de ano, estágio e função; ressalva sobre diferenças institucionais do DF. |
-| Interrupção de fontes externas | Cache de coleta, sinalização de falhas e preservação de resultados anteriores quando aplicável. |
-| Indisponibilidade do Qwen | Diagnóstico específico, erros HTTP e independência das consultas fiscais. |
-| Respostas incorretas da IA | Avisos de verificação, validação estrutural e apresentação das fontes dos valores selecionados. |
-| Exposição indevida da API de cadastro | Uso local, sem publicação aberta e sem autenticação presumida. |
+A aceitação técnica foi verificada com **259 testes automatizados** e o autor informou ter executado a aplicação completa em seu computador sem encontrar problemas. Isso não substitui a conferência amostral dos valores diretamente nos demonstrativos. Como evoluções possíveis, ficam a integração do IBGE, a ampliação do escopo de funções e novas avaliações dos prompts.
 
-## Evoluções previstas
+## 7. Entregas e evidências
 
-Aprimorar a conferência documental da coleta nacional; incorporar despesas totais comparáveis e denominadores oficiais; relacionar população do IBGE por exercício; permitir indicadores per capita oficiais e correção monetária; avaliar a fidelidade das explicações geradas pelo Qwen; e ampliar gradualmente o mecanismo de recuperação documental.
-
-Essas evoluções **não são funcionalidades concluídas nesta versão**.
+O trabalho mantém o código e os dados consolidados no repositório, com os relatórios de coleta e os resultados do experimento de IA em `documentacao/`. O documento completo revisado é [`TDSP_ARTEFATOS_REVISADOS.pdf`](TDSP_ARTEFATOS_REVISADOS.pdf), acompanhado da versão editável `.docx`. O PDF original foi guardado em `documentacao/historico/`, para comparação.

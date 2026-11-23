@@ -83,7 +83,7 @@ def test_entrada_valida_com_acentos_e_espacos_aplica_normalizacao(monkeypatch):
     assert corpo["texto_original"] == "Educação e saúde são funções orçamentárias."
     assert corpo["resultado"] == "Resumo válido."
     assert observado[0]["texto"] == corpo["texto_original"]
-    assert observado[0]["max_novos_tokens"] == 256
+    assert observado[0]["max_novos_tokens"] == 384
     assert RespostaTexto.model_validate(corpo).execucao_local is True
 
 

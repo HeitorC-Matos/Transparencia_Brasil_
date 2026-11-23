@@ -4,7 +4,7 @@
 
 O projeto passa a disponibilizar `POST /processar_texto` para resumir e explicar textos. O caminho de processamento é **Streamlit → cliente HTTP → FastAPI → Transformers/PyTorch → Qwen3-4B-Instruct-2507 armazenado no disco → resposta JSON**. A chamada HTTP ocorre exclusivamente entre programas no próprio computador (`127.0.0.1`). Nenhum serviço externo de geração de texto é utilizado.
 
-O modelo foi selecionado considerando desempenho, memória disponível e compatibilidade local. A máquina de referência tem **16 GB de RAM e NVIDIA RTX 4060 Laptop com 8188 MiB de VRAM**. Por isso, usamos quantização bitsandbytes NF4 de 4 bits, computação float16, máximo de 2.048 tokens totais de entrada e até 512 tokens gerados. O uso efetivo de RAM/VRAM e a latência **devem ser medidos localmente**: não há resultados inventados no relatório. Não recomendamos habilitar múltiplos processos workers de Uvicorn, pois cada um poderia carregar sua própria cópia do modelo.
+O modelo foi selecionado considerando desempenho, memória disponível e compatibilidade local. A **justificativa técnica completa**, com comparação a BERT/T5 e modelos maiores, parâmetros, licença, disponibilidade no Hugging Face, VRAM e latências medidas, encontra-se na seção **“Por que escolhemos o Qwen3-4B-Instruct-2507 em vez de outro modelo?” do README**. A máquina de referência tem **16 GB de RAM e NVIDIA RTX 4060 Laptop com 8188 MiB de VRAM**. Por isso, usamos quantização bitsandbytes NF4 de 4 bits, computação float16, máximo de 2.048 tokens totais de entrada e até 384 novos tokens por solicitação, por padrão. O uso efetivo de RAM/VRAM e a latência **devem ser medidos localmente**: não há resultados inventados no relatório. Não recomendamos habilitar múltiplos processos workers de Uvicorn, pois cada um poderia carregar sua própria cópia do modelo.
 
 O modelo é carregado **sob demanda, uma vez por processo**. Seu primeiro processamento demora mais devido à leitura dos pesos. Os endpoints legados seguem disponíveis mesmo que o LLM não esteja instalado. O serviço não faz download automático: a única rotina que usa internet para baixar pesos é `scripts/baixar_modelo.py`, executada separadamente. `local_files_only=True` e `HF_HUB_OFFLINE=1` impedem consultas ao Hub durante a inferência.
 
@@ -14,8 +14,8 @@ Use Python **3.11** ou **3.12**. Na pasta raiz do projeto (onde está `api/`), a
 
 ```powershell
 py -3.11 --version
-py -3.11 -m venv .venv_tp4
-.\.venv_tp4\Scripts\Activate.ps1
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 nvidia-smi
 ```
@@ -50,7 +50,7 @@ python scripts/diagnostico_gpu.py
 
 ## 4. Subir a aplicação e validar a inferência real
 
-**Terminal 1**, na raiz e com `.venv_tp4` ativado:
+**Terminal 1**, na raiz e com `.venv` ativado:
 
 ```powershell
 python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --workers 1
@@ -136,9 +136,9 @@ Teste de regressão e contrato, sem carregar pesos:
 python -m pytest -q
 ```
 
-Na versão consolidada, **130 testes automatizados passaram, com oito avisos de depreciação e nenhuma falha**. Os testes de serviços e erros da IA utilizam inferência simulada para verificar fluxos e contratos; por si só, **não atestam a geração real na GPU**. Essa execução foi confirmada separadamente pelo usuário no Windows.
+Na versão consolidada, **184 testes automatizados passaram, com oito avisos de depreciação e nenhuma falha**. Os testes de serviços e erros da IA utilizam inferência simulada para verificar fluxos e contratos; por si só, **não atestam a geração real na GPU**. Essa execução foi confirmada separadamente pelo usuário no Windows.
 
-Na execução local informada pelo usuário, duas respostas da API registraram 72.912 ms (primeiro carregamento e geração) e 12.906 ms (segunda geração). A GPU foi identificada em uso pelo Python e o Streamlit exibiu a resposta. A execução com a internet desconectada e uma medição detalhada da VRAM ainda não foram confirmadas. Os valores foram relatados pelo usuário, não reproduzidos neste ambiente. A recuperação RAG e as perguntas com fontes do corpus de 16 fragmentos fazem parte das próximas etapas; o endpoint atual processa **o texto recebido**, sem afirmar que fez busca documental.
+Na execução local informada pelo usuário, duas respostas da API registraram 72.912 ms (primeiro carregamento e geração) e 12.906 ms (segunda geração). A GPU foi identificada em uso pelo Python e o Streamlit exibiu a resposta. A execução com a internet desconectada e uma medição detalhada da VRAM ainda não foram confirmadas. Os valores foram relatados pelo usuário, não reproduzidos neste ambiente. A busca semântica RAG sobre os 16 fragmentos ainda não foi implementada. A nova sumarização permite selecionar diretamente os textos institucionais já coletados, enquanto o endpoint legado `/processar_texto` continua processando **o texto recebido**, sem afirmar que fez busca documental.
 
 A qualidade da geração pode variar e respostas podem conter erros. Não confunda a amostra ilustrativa com os dados fiscais declarados ao Siconfi: são bases independentes e têm limites de interpretação diferentes. A API deve permanecer ligada a `127.0.0.1`: as rotas de cadastro antigas e as novas rotas de IA não foram projetadas para exposição pública sem autenticação e controles adicionais.
 

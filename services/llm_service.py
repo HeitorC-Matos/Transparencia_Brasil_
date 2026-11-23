@@ -160,7 +160,9 @@ class ServicoLLM:
             self._last_error = None
 
     def gerar(self, texto: str, operacao: Literal["resumo", "explicacao"],
-              max_novos_tokens: int = 256) -> ResultadoGeracao:
+              max_novos_tokens: int = 384, *,
+              instrucoes_sistema: str | None = None,
+              instrucao_tarefa: str | None = None) -> ResultadoGeracao:
         # A trava cobre inclusive o carregamento, impedindo carregamentos concorrentes.
         if not self._generation_lock.acquire(blocking=False):
             raise ModeloOcupado("O modelo está processando outra solicitação. Tente novamente.")
@@ -182,8 +184,8 @@ class ServicoLLM:
                 "Explique de forma clara o texto a seguir, sem acrescentar informações não verificadas:\n\n"
             )
             mensagens = [
-                {"role": "system", "content": orientacao},
-                {"role": "user", "content": tarefa + texto},
+                {"role": "system", "content": instrucoes_sistema if instrucoes_sistema is not None else orientacao},
+                {"role": "user", "content": (instrucao_tarefa + "\n\n" + texto) if instrucao_tarefa is not None else tarefa + texto},
             ]
             prompt = self._tokenizer.apply_chat_template(
                 mensagens, tokenize=False, add_generation_prompt=True

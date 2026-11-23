@@ -25,7 +25,7 @@ class RequisicaoTexto(BaseModel):
         default="resumo", description="Operação de linguagem natural solicitada."
     )
     max_novos_tokens: int = Field(
-        default=256, ge=32, le=512,
+        default=384, ge=32, le=512,
         description="Número máximo de novos tokens; faixa: 32 a 512."
     )
 

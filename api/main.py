@@ -13,6 +13,8 @@ from fastapi import FastAPI, HTTPException, Query, status
 
 from api.erros import configurar_erros
 from api.routes.ia import router as ia_router
+from api.routes.sumarizacao import router as sumarizacao_router
+from api.routes.perguntas import router as perguntas_router
 from api.schemas.geral import ConteudoWeb, ResumoEstatisticas, SaudeAPI
 from api.routes.dados_oficiais import router as oficiais_router
 from filelock import FileLock
@@ -37,6 +39,8 @@ app = FastAPI(
 configurar_erros(app)
 
 app.include_router(ia_router)
+app.include_router(sumarizacao_router)
+app.include_router(perguntas_router)
 app.include_router(oficiais_router)
 
 

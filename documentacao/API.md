@@ -59,7 +59,7 @@ As rotas de consulta, estatísticas e cadastro permanecem disponíveis. Foram ac
 
 O corpo e a resposta estão descritos em [Guia de integração local](GUIA_LLM_LOCAL.md). Os contratos Pydantic são declarados nos argumentos `response_model` e agora abrangem todas as rotas. A validação também rejeita saídas vazias ou campos de tipo incorreto; o tratamento das exceções já distingue entradas inválidas, indisponibilidade, modelo ocupado, falhas internas e timeout, com códigos HTTP e identificadores de requisição. A API não baixa os pesos automaticamente. O primeiro uso realiza o carregamento a partir do disco, e somente uma geração por vez é permitida para preservar a memória da GPU.
 
-**Comprovação:** 130 testes automatizados passaram na versão consolidada. O script HTTP `scripts/verificar_questao4.py` confirmou respostas 200, 422 e 404 com identificador de requisição, sem carregar o modelo. **A geração real do Qwen foi confirmada separadamente pelo usuário** em uma RTX 4060, tanto pela FastAPI quanto pelo Streamlit. Cenários excepcionais são exercitados nos testes com inferência simulada, sem provocar esgotamento real de VRAM.
+**Comprovação:** 259 testes automatizados passaram na versão atual consolidada. O script HTTP `scripts/verificar_erros_http.py` confirmou respostas 200, 422 e 404 com identificador de requisição, sem carregar o modelo. **A geração real do Qwen foi confirmada separadamente pelo usuário** em uma RTX 4060, tanto pela FastAPI quanto pelo Streamlit. Cenários excepcionais são exercitados nos testes com inferência simulada, sem provocar esgotamento real de VRAM.
 
 
 ## Contratos e validação dos dados de entrada e saída
@@ -79,4 +79,36 @@ Verificação: `python -m pytest -q tests/test_contratos_resposta.py` e `http://
 
 As rotas utilizam os manipuladores em `api/erros.py`. Respostas de erro são JSON e contêm `erro.codigo`, `erro.mensagem`, `erro.requisicao_id` e, quando necessário, `erro.detalhes`. O cabeçalho `X-Request-ID` acompanha os retornos para auxiliar o diagnóstico; o campo `detail` permanece por compatibilidade. Entradas inválidas geram 422 sem acionar o Qwen. Ocupação da GPU gera 429 com `Retry-After`, indisponibilidade ou falta de VRAM gera 503, falha interna gera 500 e estouro do limite cooperativo de geração gera 504. Erros estruturais na saída não são retornados como sucesso.
 
-O Streamlit mostra mensagens compreensíveis para essas situações. O controle de concorrência continua limitado a uma geração por vez, e não é feita repetição automática de requisições que poderiam executar a mesma geração mais de uma vez. Para o diagnóstico HTTP sem GPU, utilize `python scripts/verificar_questao4.py` com a API em execução.
+O Streamlit mostra mensagens compreensíveis para essas situações. O controle de concorrência continua limitado a uma geração por vez, e não é feita repetição automática de requisições que poderiam executar a mesma geração mais de uma vez. Para o diagnóstico HTTP sem GPU, utilize `python scripts/verificar_erros_http.py` com a API em execução.
+
+## Sumarização automática com dados do projeto
+
+A solução documental e fiscal ampliou o Assistente IA sem alterar os contratos anteriores:
+
+- `GET /ia/documentos` — lista identificadores, títulos, URLs, métodos e datas dos textos coletados em `data/conteudo_web.csv` e `data/conteudo_selenium.csv`; não ativa o Qwen.
+- `POST /ia/resumir_documento` — recebe `documento_id`, `modo` (`executivo`, `topicos` ou `simplificado`), `versao_prompt` (`basico`, `estruturado` ou `fundamentado`) e `max_novos_tokens` (96–384). O serviço lê apenas documentos catalogados e identifica as fontes. Quando necessário, produz resumos de fragmentos e os consolida.
+- `POST /ia/sintese_fiscal` — recebe `ufs` (lista válida de 1 a 27), `ano` (2021–2025), `funcoes` (uma ou mais de Educação, Saúde e Segurança Pública), `modo`, `versao_prompt` e `max_novos_tokens`. Os somatórios são produzidos por Python/Decimal com validação da cobertura dos registros, sem cálculos delegados ao modelo.
+
+Ambas as respostas retornam `resultado`, `tipo`, `titulo`, `modo`, `versao_prompt`, `modelo`, `execucao_local`, `fontes`, `metadados`, `etapas_geracao`, `tokens_entrada`, `tokens_saida`, `tempo_processamento_ms` e `aviso`. A síntese fiscal inclui `contexto_calculado`, reproduzindo os valores e ressalvas fornecidos ao modelo.
+
+As entradas e saídas estão formalizadas em `api/schemas/sumarizacao.py`. O OpenAPI gerado em `http://127.0.0.1:8000/docs` apresenta os contratos e códigos de erro. Os conteúdos vêm de arquivos locais coletados anteriormente, sem buscas arbitrárias na rede. O detalhamento técnico e a metodologia dos prompts estão em [`SUMARIZACAO_COM_LLM.md`](SUMARIZACAO_COM_LLM.md).
+
+
+## Perguntas fiscais em linguagem natural
+
+`POST /ia/perguntar_dados`: recebe `pergunta` (5 a 500 caracteres), `ano_referencia` (2021–2025; padrão 2025), `usar_qwen` (booleano; padrão verdadeiro) e `max_novos_tokens` (96–384). Os tipos e limites são validados por `api/schemas/perguntas.py`. Para testar sem GPU, informe `usar_qwen=false`.
+
+O Python interpreta **somente** rankings, consultas por UF, comparações de duas UFs, evolução histórica e participação percentual no subtotal das três funções. Valores calculados e fontes permanecem identificados separadamente da explicação opcional produzida pelo Qwen. A entrada original do usuário não é encaminhada ao modelo; apenas o resultado calculado e o critério. Dados oficiais insuficientes ou perguntas fora do escopo geram HTTP 422, sem atribuição de zero a registros faltantes; base indisponível gera 503. A indisponibilidade opcional do Qwen não impede o retorno da resposta determinística e é sinalizada em `aviso_ia`.
+
+Exemplo:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/ia/perguntar_dados -ContentType 'application/json' -Body '{"pergunta":"Qual UF mais gastou com Educação em 2025?","ano_referencia":2025,"usar_qwen":false}'
+```
+
+Consulte [`PERGUNTAS_DADOS_OFICIAIS.md`](PERGUNTAS_DADOS_OFICIAIS.md) para exemplos, regras metodológicas e limitações.
+
+
+### ODS 16 e Governança
+
+`POST /ia/perguntar_dados` agora também reconhece perguntas sobre ODS 16, as metas 16.6/16.10, Governança ESG e o Transparência Brasil. O corpo mantém os campos `pergunta`, `ano_referencia`, `usar_qwen` e `max_novos_tokens`. Nesse caso o campo `tipo` da resposta será `ods16`, `dados` será uma lista vazia e `fontes` terá o documento da ONU e a documentação local. As consultas fiscais mantêm os tipos e cálculos anteriores. O limite padrão para o Qwen continua em 384 tokens.
