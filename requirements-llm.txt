@@ -1,6 +1,0 @@
-# Instale primeiro PyTorch com CUDA: ver documentacao/GUIA_LLM_LOCAL.md
--r requirements.txt
-transformers>=4.55,<5
-accelerate>=1.4,<2
-bitsandbytes>=0.46,<1
-huggingface-hub>=0.34,<2
